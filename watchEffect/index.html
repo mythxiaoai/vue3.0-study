@@ -1,0 +1,113 @@
+<script src="../js/vue.global.js"></script>
+
+<div id="app">
+  <suspense>
+    <demo></demo>
+  </suspense>
+</div>
+
+<script>
+  let { createApp, ref, reactive, watchEffect, onMounted } = Vue;
+  let x = ref(0);
+  let y = ref(0);
+  let app;
+  //绑定鼠标事件
+  document.onmousemove = function (e) {
+    x.value = e.pageX;
+    y.value = e.pageY;
+  };
+  const time = ref("");
+
+  runTime(time, 1000, () => {
+    //console.log(time.value);
+  });
+
+  //立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
+  //let stopHandle = watchEffect(() => console.log(time.value));
+
+  //停止监听的两种方法   1. 运行返回的stopHandle  2.销毁组件
+  //1.运行2秒停止监听
+  //setTimeout(stopHandle,2000);
+
+  //2.销毁组件   不成功，，vue3.0没有主动$destroy方法？
+  // setTimeout(()=>{
+  //   app.$destroy()
+  // },2000);
+
+  //全量参数
+  let stopHandle2 = watchEffect(
+    (onInvalidate) => {
+      //onInvalidate  销毁回调
+      /*当监听生效前   改变时 或 停止侦听前执行的操作 */
+      onInvalidate(() => {
+        console.log("onInvalidate 触发或停止");
+      });
+      console.log("reactive", time.value);
+    },
+    {
+      flush: "post", //post|async|pre  默认是post   做了异步组件 依旧不知道怎么用~哈哈
+      onTrack(e) {
+        console.log("onTrack", e);
+      }, //仅在开发有效，变量被reactive时触发
+      onTrigger(e) {
+        //与onTack不同的是oldTarget，oldValue 值  所以一般在这里debugger
+        /**
+    effect: ƒ reactiveEffect(...args)
+    key: "value"
+    newValue: {newValue: "2020/6/12 上午6:30:16"}
+    oldTarget: undefined
+    oldValue: undefined
+    target: {__v_isRef: true}
+    type: "set"
+    __proto__: Object
+    */
+        console.log("onTrigger", e);
+      }, //仅在开发有效，依赖项变更导致监听呗触发时调用
+    }
+  );
+  //setTimeout(stopHandle2,2000);//onInvalidate 触发三次
+
+//因为要测试异步组件 watchEffect的flush选项
+  const Demo = {
+    name: "demo",
+    template: `<div>{{time}}</div>`,
+    //如果async异步setup需要在标签套一层suspense
+    //控制台出现这个，<Suspense> is an experimental feature and its API will likely change.这是一个实验性的特性，它的API可能会改变 
+    async setup(props, content) {
+      //测试 flush选项
+      onMounted(() => {
+        console.log("mounted");
+      });
+      //两秒后 停止监听
+      await sleep(2000, stopHandle2);
+      return { time };
+    }
+  };
+
+
+  app = createApp({
+    name: "app",
+    components: { Demo },
+  }).mount("#app");
+
+  function runTime(result, intervalTime, cb) {
+    requestAnimationFrame(function update() {
+      result.value = new Date().toLocaleString();
+      cb && cb();
+      if (intervalTime) {
+        setTimeout(update, intervalTime);
+      } else {
+        requestAnimationFrame(update);
+      }
+    });
+  }
+
+  function sleep(time = 200, cb) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve("执行成功");
+        cb && cb();
+      }, time);
+    });
+  }
+</script>

@@ -1,0 +1,71 @@
+<script src="../js/vue.global.js"></script>
+
+<div id="app">
+  X:{{x}} Y:{{y}}
+  <p>{{fmtTime}}</p>
+  <p>{{deepCom}}</p>
+</div>
+
+<script>
+  let { createApp, ref, reactive, computed,toRaw } = Vue;
+  let x = ref(0);
+  let y = ref(0);
+  //绑定鼠标事件
+  document.onmousemove = function (e) {
+    x.value = e.pageX;
+    y.value = e.pageY;
+  };
+  let app = createApp({
+    setup() {
+      const time = ref("");
+      const fmtTime = computed(() => {
+          return "现在时间是："+time.value
+      })
+      runTime(time,1000,()=>{
+          // console.log(time.value);
+      })
+
+      //或者传入一个拥有 get 和 set 函数的对象，创建一个可手动修改的计算状态。
+      const count = ref(1);
+      const plusOne = computed({
+          get:()=>count.value+1,
+          set(v){
+            console.log(this);
+            count.value = v-1;
+          }
+      });
+      console.log(plusOne.value);//2
+      plusOne.value = 9;
+      console.log(count.value);//8   set:9-1
+      console.log(plusOne.value);//9   set:9-1  get:+1
+
+      //深层次的计算属性是否会监听
+      const deep = reactive({a:1,b:{a:2}});
+      deep.a = 2;
+      console.log(deep);
+      deepCom = computed(()=>{
+        console.log("运行");
+        let res = JSON.parse(JSON.stringify(toRaw(deep)))
+          return res
+      })
+      console.log(plusOne.value);//2
+      plusOne.value = 9;
+      console.log(count.value);//8   set:9-1
+      console.log(plusOne.value);//9   set:9-1  get:+1
+
+      return { x, y, fmtTime,deepCom };
+    },
+  }).mount("#app");
+
+  function runTime(result, intervalTime, cb) {
+    requestAnimationFrame(function update() {
+      result.value = new Date().toLocaleString();
+      cb && cb();
+      if (intervalTime) {
+        setTimeout(update, intervalTime);
+      } else {
+        requestAnimationFrame(update);
+      }
+    });
+  }
+</script>

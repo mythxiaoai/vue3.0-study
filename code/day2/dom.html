@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+  <div id="app">
+    开课吧
+  </div>
+
+  <script>
+    let ele = document.getElementById('app')
+    let arr = []
+    for(let k in ele){
+      arr.push(k)
+    }
+    console.dir(arr.length,arr.join(' '))
+    // 一个简单的dom节点，竟然又200+属性 ，怪不的慢
+
+    // 其实用简单的对象就可以描述
+    let vdom = {
+      type:"div",
+      props:{ id:'app'},
+      children:['开课吧']
+    }
+  </script>
+</body>
+</html>

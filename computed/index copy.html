@@ -1,0 +1,45 @@
+<script src="../js/vue.global.js"></script>
+
+<div id="app">
+  -{{com}}-
+  <select>
+    <option v-for="v in b" value="v">{{v}}</option>
+  </select>
+</div>
+
+<script>
+  let { createApp, ref, reactive, computed, toRaw,watch } = Vue;
+
+  window.app = createApp({
+    setup() {
+      let a = ref([])
+      let b = ref([])
+      let com = computed(()=>{
+        a.c=666;
+        setTimeout(()=>{
+          a.value.push(6)
+        },1000)
+        return a.value
+      })
+    
+      
+      watch(()=>com.value,()=>{
+        b = a
+      },{deep:true,immediate:true});
+
+      return { com,b };
+    },
+  }).mount("#app");
+
+  function runTime(result, intervalTime, cb) {
+    requestAnimationFrame(function update() {
+      result.value = new Date().toLocaleString();
+      cb && cb();
+      if (intervalTime) {
+        setTimeout(update, intervalTime);
+      } else {
+        requestAnimationFrame(update);
+      }
+    });
+  }
+</script>

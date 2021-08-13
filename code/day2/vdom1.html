@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+  <script>
+
+
+// 创建虚拟DOM
+function createElement(type, props, children){
+  return { type, props, children }
+}
+function render(dom) {
+  let el = document.createElement(dom.type)
+  for (let key in dom.props) {
+      el.setAttribute(key, dom.props[key])
+  }
+  dom.children.forEach(child => {
+      child = (typeof child=='object') ? render(child) : document.createTextNode(child)
+      el.appendChild(child)
+  })
+  return el
+}
+
+// let vdom = <ul> </ul>
+let vdom = createElement('ul',{class:'list'},[
+  createElement('li', {class:'item'},['item1']),
+  createElement('li', {class:'item'},['item2']),
+  createElement('li', {class:'item'},['item3'])
+])
+var el = render(vdom)
+document.body.appendChild(el)
+
+
+
+
+
+  </script>
+</body>
+</html>

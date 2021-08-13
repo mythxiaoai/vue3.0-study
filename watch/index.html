@@ -1,0 +1,154 @@
+<script src="../js/vue.global.js"></script>
+
+<div id="app">
+<p>a: {{a}}<input v-model.number="a"></input> <button @click="stopHandle">停止监听</button></p>
+<p>b: {{b}}<input v-model="b"></input></p>
+<p>c: {{c}}<input v-model="c.a.a"></input>(c.a.a)</p>
+<p>d: {{d}}<input v-model="d"></input></p>
+<p>e: {{e}}<input v-model="e.c"></input>("e.c")</p>
+<p>f: {{f}}<input v-model="f"></input></p>
+<p>g: {{g}}<input v-model.number="a"></input>("a")</p>
+<p>h/i: {{h}}/{{i}}<input v-model="h"></input>("h")<input v-model="i"></input>("i")</p>
+<p>j: {{j}}<input v-model="j"></input> <button @click="stopHandleJ">停止监听</button></p>
+</div>
+
+<script>
+  let { createApp, ref, reactive, computed,watch,watchEffect} = Vue;
+  let app = createApp({
+    setup() {
+      let a = ref(1);
+      let b = ref(2);
+      //ref里面如果是对象  那么会自动调用reactive 返回代理对象
+      let c = ref({a:{a:1}});
+      let d = ref(4);
+      let e = ref({a:1,b:2,c:3});
+      let f = ref(5);
+      let g = computed(()=>{
+        //ref.value  如果是数字，返回的居然是string..这里是因为输入框的原因改为v-model.number就行  遇到点坑在这里说明下
+        //console.log(typeof a.value);//string
+        return a.value + 1;
+      });
+      let h =ref(6);
+      let i =ref(7);
+      let j =ref(8);
+
+      //完整写法
+      // watch([fooRef, barRef], ([foo, bar], [prevFoo, prevBar],onInvalidate) => {
+      //   /* ... */
+      // },{
+      // immediate:false,
+      // deep:false
+      // })
+      //1 普通   这里用不用剪头函数this都会指向windows 
+      //新增onInvalidate回调  值得注意的是如果stopHandle的停止更新运行前没有发生一次变动(监听回调没被执行)，那么onInvalidate回调不会被执行！
+      let stopHandle = watch(a,(val, oldVal,onInvalidate)=>{
+        console.log('watch-a  new: %s, old: %s', val, oldVal);
+        onInvalidate(()=>{//测试过没有任何回调参数
+         console.log("onInvalidate执行:a停止监听");
+        });
+      })
+      //2 方法名  这里这种写法不行，会报栈溢出 RangeError: Maximum call stack size exceeded
+      watch(b,"watchb");
+
+      function watchb(){
+        console.log('watch-b  new: %s, old: %s', val, oldVal)
+      }
+      //3 deep深度监听  包括property
+      watch(c,(val, oldVal)=>{
+        console.log('watch-c.a.a  new: %s, old: %s', val.a.a, oldVal)
+        console.log(val, oldVal)
+      },
+      {deep: true}
+      )
+      //4 该回调将会在侦听开始之后被立即调用
+      watch(d,(val, oldVal)=>{
+        console.log('watch-d  new: %s, old: %s', val, oldVal)
+      },
+      {immediate: true}
+      )
+      //5 无法对对象子集精准监控?  A watch source can only be a getter/effect function(说的是计算属性), a ref, a reactive object, or an array of these types. 
+      //下面例子有getter/effect   ref/reactive 如果是ref(对象)底层调用的是reactive .value就是代理对象  array  数组就是多值一起监听
+      watch("e.c",(val, oldVal)=>{
+        console.log('watch-e.c  new: %s, old: %s', val, oldVal)
+      }
+      )
+
+      //6  支持Vue2.0一个监听值，多个handle数组的写法 不推荐，会有警告 `watch(fn, options?)` signature has been moved to a separate API. Use `watchEffect(fn, options?)` instead. `watch` now only supports `watch(source, cb, options?) signature. 
+      //结果  使用都正常
+      watch(f,[(val, oldVal)=>{
+        console.log('watch-f-A new: %s, old: %s', val, oldVal)
+      },
+      (val, oldVal)=>{
+        console.log('watch-f-B new: %s, old: %s', val, oldVal)
+      }
+      ],
+      {immediate: true}
+      )
+      //7 计算属性
+      watch(g,(val, oldVal)=>{
+        console.log('watch-g new: %s, old: %s', val, oldVal)
+      },
+      {immediate: true}
+      )
+      //8 数组  侦听多个数据源
+      watch([h,i],(val, oldVal)=>{
+        console.log('watch-h/i new: %s, old: %s', val, oldVal)
+        console.log(val, oldVal)
+      })
+      //9 与 watchEffect 共享的行为   
+      //注意是共享行为，不是共享结果，意思是中间的监听的过程会触发watchEffect的onInvalidate 
+      //因为watchEffect的onInvalidate是改变或停止都会执行，而watch的onInvalidate只有停止监听才回停止
+      //结论：当值改变，会触发watchEffect的onInvalidate,当任意一方停止更新时，不会影响另一个监听watch/watchEffect
+       watch(j,(val, oldVal,onInvalidate)=>{
+        console.log('watch-h/i new: %s, old: %s', val, oldVal)
+        onInvalidate(()=>{
+          console.log("onInvalidate-watch停止监听");
+        });
+      })
+
+      let stopHandleJ = watchEffect((onInvalidate) =>{
+        onInvalidate(()=>{
+          console.log("onInvalidate-watchEffect停止监听");
+        });
+        console.log('watchEffect-J', j.value);
+      });
+
+      //watch和watchEffect的区别
+      /*
+      watch：
+      懒执行watchEffect的onInvalidate；
+      更明确哪些状态的改变会触发侦听器重新运行副作用；
+      访问侦听状态变化前后的值。
+      watchEffect：
+      写法更加自由，不必是指定的值监听
+      */
+     
+      return {a,b,c,d,e,f,g,h,i,j,stopHandle,stopHandleJ};
+    },
+  }).mount("#app");
+
+  function runTime(result,intervalTime,cb){
+    requestAnimationFrame(function update(){
+        result.value = new Date().toLocaleString();
+        cb&&cb();
+        if(intervalTime){
+            setTimeout(update,intervalTime)
+        }else{
+            requestAnimationFrame(update);
+        }
+    })
+  }
+</script>
+<style>
+  p{
+    display: flex;
+    margin: 0 auto;
+    width: 50%;
+    line-height: 40px;
+    align-items: center;
+  }
+  input{
+    margin-left: 50px;
+    margin-right: 10px;
+  }
+</style>

@@ -1,0 +1,44 @@
+<script src="../js/vue.global.js"></script>
+
+<div id="app">
+  X:{{x}} Y:{{y}}
+
+  {{deep}}
+</div>
+
+<script>
+ let {createApp,ref,reactive,unref,toRaw,markRaw} = Vue;
+        let data = reactive({x:0,y:0});
+        console.log(data);
+        //绑定鼠标事件
+        document.onmousemove = function(e){
+            data.x = e.pageX;
+            data.y = e.pageY;
+        }
+        let app = createApp({
+            setup(){
+                let deep = {a:{a:1,b:[1,2]}};
+        deep = reactive(deep);
+        console.log(deep.a);
+        console.log(deep.b);
+
+        // let res = toRaw(deep)
+        // res.a =6666;
+        // res.a =7;
+        // console.log(res);
+        // console.log(deep);
+
+        let res = markRaw(deep)
+        res.a =6666;
+        res.a =7;
+        console.log(res);
+        console.log(deep);
+
+        data.deep = deep;
+                return data;
+            }
+        }).mount('#app')
+
+        
+        
+</script>

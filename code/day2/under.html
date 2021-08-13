@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <h1></h1>
+  </div>
+  <!-- <script type></script> -->
+  <script src="underscore.js"></script>
+  <script type="text/template" id="tpl">
+    <ul class="list">
+      <% _.each(obj, function(e, i, a){ %>
+        <% if (i === 0) %>
+          <li><%- e.name %>
+        <% else if (i === a.length - 1) %>
+          <li class="last-item"><%= e.name %></li>
+        <% else %>
+          <li><%= e.name %></li>
+      <% }) %>
+    </ul>
+  </script>
+
+  <script>
+    var data = [{name: "开课吧大圣"}, {name: "最强王者"}];
+
+    var compiled = _.template(document.getElementById("tpl").innerHTML);
+    var html = compiled(data);
+    // console.log(html)
+    document.querySelector("div").innerHTML = html;
+
+
+
+
+    setTimeout(()=>{
+      data.push({name:'哈哈哈'})
+      var html1 = compiled(data);
+    // console.log(html)
+      document.querySelector("div").innerHTML = html1;
+    },1000)
+
+  </script>
+</body>
+</html>

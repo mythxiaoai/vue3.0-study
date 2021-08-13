@@ -1,0 +1,83 @@
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.2/vue.global.js"></script>
+<!-- App options template-->
+<div id="app">
+  <suspense>
+    <demo :data="msg" name="demo" @slef-event="say">
+      <p>我是slot</p>
+    </demo>
+  </suspense>
+</div>
+<!-- App options template-->
+<script>
+  let stringify = (s) => JSON.stringify(s);
+  let { ref, reactive, h } = Vue;
+
+  const Demo = {
+    template: `<div>
+  {{data}}
+  <slot></slot>
+  <p>{{str}}</p>
+  <p>{{str2.bar}}</p>
+  <p>{{promise}}</p>
+  <button v-on:click="goEmit">
+      Click me to be slefEvent
+  </button>
+  </div>`,
+    props: {
+      data: String,
+    },
+    emits: ["slefEvent"],
+    //如果async异步setup需要在标签套一层suspense
+    async setup(props, content) {
+      console.log(props, content);
+      let { data } = props; // 只是测试  别用解构，会失去响应
+      let { attrs, slots, emit } = content; //第二个参数提供了一个上下文对象，从原来 2.x 中 this 选择性地暴露了一些 property。
+
+      const str = ref("我是ref出来的");
+      const str2 = reactive({ bar: "哈哈" });
+
+      let promise = await sleep(2000);
+      promise = ref(promise);
+
+      //方法
+      function goEmit() {
+        console.log("方法 - goEmit");
+        emit("slefEvent", "小艾是最帅的");
+      }
+
+      return {
+        str,
+        str2,
+        goEmit,
+        promise,
+      };
+    },
+    beforeCreate() {
+      console.log("beforeCreate");
+    },
+  };
+
+  let app = Vue.createApp({
+    components: { Demo },
+    el: "#app",
+    data: () => ({
+      msg: "xiaoai is boy",
+    }),
+    methods: {
+      say(msg) {
+        console.log("执行方法");
+        this.msg = msg;
+      },
+    },
+  }).mount("#app");
+
+  function sleep(time = 200) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve("执行成功");
+      }, time);
+    });
+  }
+</script>
+
+<style></style>

@@ -1,0 +1,64 @@
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.2/vue.global.js"></script>
+
+<div id="app">
+  <suspense>
+    {{state}}{{count}}
+  </suspense>
+</div>
+
+<script>
+  let { createApp, ref, reactive, watchEffect, onMounted } = Vue;
+  let x = ref(0);
+  let y = ref(0);
+  let app;
+  
+  //watchEffect  只能是Ref单值
+  app = createApp({
+    name: "app",
+    setup(){
+      let state = reactive({
+        obj:{a:1},
+        count:3
+      })
+      watchEffect(()=>{
+        console.log("watchEffect",state);
+        return state
+      })
+
+      const count = ref(0)
+
+      watchEffect(() => console.log(state))
+      // -> logs 0
+
+      setInterval(() => {
+        state.count++
+        // -> logs 1
+      }, 100)
+
+
+      window.state = state;
+      return {state,count}
+    },
+  }).mount("#app");
+
+  function runTime(result, intervalTime, cb) {
+    requestAnimationFrame(function update() {
+      result.value = new Date().toLocaleString();
+      cb && cb();
+      if (intervalTime) {
+        setTimeout(update, intervalTime);
+      } else {
+        requestAnimationFrame(update);
+      }
+    });
+  }
+
+  function sleep(time = 200, cb) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve("执行成功");
+        cb && cb();
+      }, time);
+    });
+  }
+</script>

@@ -1,0 +1,78 @@
+<script src="../js/vue.global.js"></script>
+
+<div id="app">
+  X:{{x}} Y:{{y}}
+</div>
+
+
+<script>
+  let { createApp, ref, reactive } = Vue;
+  let x = ref(0);
+  let y = ref(0);
+  //绑定鼠标事件
+  document.onmousemove = function (e) {
+    x.value = e.pageX;
+    y.value = e.pageY;
+  };
+  let app = createApp({
+    setup() {
+    /**
+     *  1. 接受一个参数值并返回一个响应式且可改变的 ref 对象。ref 对象拥有一个指向内部值的单一属性 .value。
+     *  2. 如果传入 ref 的是一个对象，将调用 reactive 方法进行深层响应转换。
+     *  3. 在模板中返回Object会自动解套，不用额外.value  如果返回Array或者Map等原生集合类中访问ref，不会自动解套
+     *  4. 如果将一个新的 ref 分配给现有的 ref， 将替换旧的 ref 
+     */
+    //1
+    //  const count = ref(0)
+    // console.log(count.value) // 0
+
+    // count.value++
+    // console.log(count.value) // 1
+
+    // const time = ref(new Date().toLocaleString());
+    // runTime(time,1000,()=>{
+    //     console.log(time);
+    // })
+
+    //2如果传入 ref 的是一个对象(包含数组和其他引用数据类型)，将调用 reactive 方法进行深层响应转换。直接是个代理对象 
+        // let json = ref({a:1,b:2});
+        // console.log(json.value.a++);
+        
+
+    //3. 在模板中返回Object会自动解套，不用额外.value  如果返回Array或者Map等原生集合类中访问ref，不会自动解套
+    // const arr = reactive({x})
+    // // 这里不需要.value
+    // console.log(arr.x)
+    // const arr2 = reactive([x])
+    // // 这里需要 .value
+    // console.log(arr2[0].value)
+
+    //4. 如果将一个新的 ref 分配给现有的 ref， 将替换旧的 ref 
+      //新替换旧ref
+      // let count = ref(1)
+      // let otherCount = ref(2)
+      // count = otherCount
+      // console.log(otherCount.value) // 2
+      // console.log(count.value) // 2
+
+    //4. 如果将一个新的 ref 分配给现有的 ref， 将替换旧的 ref 
+      //新替换旧ref
+      let count = ref([0,1])
+      let otherCount = ref(2)
+      console.log(count) // 2
+    
+    },
+  }).mount("#app");
+
+  function runTime(result,intervalTime,cb){
+    requestAnimationFrame(function update(){
+        result.value = new Date().toLocaleString();
+        cb&&cb();
+        if(intervalTime){
+            setTimeout(update,intervalTime)
+        }else{
+            requestAnimationFrame(update);
+        }
+    })
+  }
+</script>
