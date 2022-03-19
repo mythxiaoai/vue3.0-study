@@ -1,26 +1,31 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.2/vue.global.js"></script>
 
 <div id="app">
-    <button id="a" @click="attrClick"  v-bind="btnBind">点击事件</button>
+    <button id="a" @click="attrClick" @click="attrClick2"  v-bind="btnBind">点击事件</button>
 </div>
 
 <script>
     let { createApp, ref, toRefs, reactive, watchEffect, onMounted } = Vue;
 
     // - 原始的事件和v-bind绑定的时间都会执行
+    // - 按照属性的先后顺序  v-bind会覆盖前面的属性
     app = createApp({
         name: "app",
         setup() {
             let state = reactive({
                 btnBind: {
-                    onClick(e) {
-                        console.log("onClick", e);//都会执行
-                    },
+                    onClick:[(e) =>{
+                        console.log("onClick1", e);//都会执行
+                    },(e) =>{
+                        console.log("onClick2", e);//都会执行
+                    }],
                     id: "b"
                 },
-                attrClick(e) {
-                    console.log("attrClick", e);//都会执行
-                }
+                attrClick:[(e)=> {
+                    console.log("attrClick1", e);//都会执行
+                },(e)=>{
+                    console.log("attrClick2", e);//都会执行
+                }]
             })
 
             window.state = state;

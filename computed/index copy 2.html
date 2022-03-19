@@ -1,33 +1,23 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.2/vue.global.js"></script>
 
 <div id="app">
-  <input v-model="com"/>
+  <button @click="value++">开始运行</button>
+  {{com}}
+  {{com2}}
 </div>
 
 <script>
+
+  //这个例子的结论是   computed不能嵌套，只能做赋值后计算的线性计算
   let { createApp, ref, reactive, computed, toRaw,watch } = Vue;
 
   window.app = createApp({
     setup() {
-      let val = ref("666")
-      let a = ref([])
-      let b = ref([])
-      let com = computed({
-        get:()=>{
-          return val.value;
-        },
-        set:(value)=>{
-          console.log("set");
-          val.value = value;
-        }
-      })
-    
-      
-      watch(()=>com.value,()=>{
-        b = a
-      },{deep:true,immediate:true});
-
-      return { com,b,val };
+      let value = ref(0);
+      let com = computed(()=>value.value);
+      let com2 = computed(()=>com.value+2);
+      //let com2 = computed(()=>computed(()=>value.value).value+1);
+      return {value,com,com2}
     },
   }).mount("#app");
 

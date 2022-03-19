@@ -1,0 +1,32 @@
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.1.2/vue.global.js"></script>
+
+<div id="app">
+    <input ref="aaa" type="text">
+    {{com}}
+    <button @click="handleClick">开始运行</button>
+</div>
+
+<script>
+
+    //这个例子的结论是   refs可以通过计算属性和watch去做监听和赋值
+    let { createApp, ref, reactive, computed, toRaw, watch } = Vue;
+
+    window.app = createApp({
+        setup() {
+            let aaa = ref();
+            let handleClick = function(){
+                console.log(aaa.value);
+                aaa.value.focus();
+            }
+            watch(()=>aaa.value,()=>{
+                console.log("运行watch",aaa)
+            })
+            let com = computed(()=>{
+                console.log("运行computed",aaa);
+                return 222  
+            })
+            return { aaa,handleClick,com}
+        },
+    }).mount("#app");
+
+</script>

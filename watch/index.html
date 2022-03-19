@@ -31,6 +31,17 @@
       let h =ref(6);
       let i =ref(7);
       let j =ref(8);
+      let k =reactive({a:1,b:2});
+      //下面证明可以监听reactive
+      setTimeout(function() {
+        k.a = 9
+      },3000)
+      setTimeout(function() {
+        k.b = 10
+      },2000)
+      watch([()=>k.a,()=>k.b],(v)=>{
+        console.log(v);
+      })
 
       //完整写法
       // watch([fooRef, barRef], ([foo, bar], [prevFoo, prevBar],onInvalidate) => {
